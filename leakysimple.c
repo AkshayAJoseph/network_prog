@@ -3,23 +3,38 @@
 int main() {
     int incoming, outgoing, bucket_size, n, store = 0;
 
-    printf("Enter bucket size, outgoing rate, and no. of inputs: ");
-    scanf("%d %d %d", &bucket_size, &outgoing, &n);
+    printf("Enter bucket size: ");
+    scanf("%d", &bucket_size);
+    printf("Enter outgoing rate: ");
+    scanf("%d", &outgoing);
+    printf("Enter number of inputs (time steps): ");
+    scanf("%d", &n);
 
-    while (n--) {
-        printf("\nEnter incoming packet size: ");
+    while (n > 0) {
+        printf("\n--- Time Step %d ---\n", n);
+        printf("Enter incoming packet size: ");
         scanf("%d", &incoming);
 
+        // 1. Check for Overflow
         if (incoming <= (bucket_size - store)) {
             store += incoming;
-            printf("Bucket buffer size %d out of %d\n", store, bucket_size);
+            printf("Bucket buffer: %d out of %d\n", store, bucket_size);
         } else {
-            printf("Dropped %d packets (Bucket full!)\n", incoming);
+            int dropped = (incoming + store) - bucket_size;
+            printf("Dropped %d packets\n", dropped);
+            store = bucket_size; // Bucket is now full
         }
 
-        // The "Leak" happens here
-        store = (store >= outgoing) ? (store - outgoing) : 0;
+        // 2. The "Leak" (Constant Outflow)
+        if (store >= outgoing) {
+            store -= outgoing;
+        } else {
+            store = 0; // Bucket emptied
+        }
+        
         printf("After outgoing, %d left in bucket\n", store);
+        n--;
     }
+
     return 0;
 }
